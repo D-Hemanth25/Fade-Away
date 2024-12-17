@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from app.utils import getImageInfo
+from app.validation.utils import getImageInfo, detectNSFWContent
 
 app = FastAPI()
 
@@ -30,6 +30,10 @@ async def uploadImage(file: UploadFile = File(...)):
         elif size > 5 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="Uploaded file is too large.")
         
+        isNSFW, nsfwLabels = detectNSFWContent(file)
+        if isNSFW:
+            raise HTTPException(status_code=400, detail=f"Uploaded file contains NSFW content: {nsfwLabels}")
+
         return {
             "message": "Image uploaded successfully",
             "info": imageInformation
