@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from app.validation.utils import getImageInfo, detectNSFWContent
+from app.validation.utils import getImageInfo, detectNSFWContent, uploadToS3
 
 app = FastAPI()
 
@@ -34,9 +34,15 @@ async def uploadImage(file: UploadFile = File(...)):
         if isNSFW:
             raise HTTPException(status_code=400, detail=f"Uploaded file contains NSFW content: {nsfwLabels}")
 
+        uploadResponse = uploadToS3(file, 1 * 3600)
+        if not uploadResponse.get("success", False):
+            error_message = uploadResponse.get("error", "Unknown error")
+            raise HTTPException(status_code=400, detail=f"Error in uploading file: {error_message}")
+
         return {
             "message": "Image uploaded successfully",
-            "info": imageInformation
+            "info": imageInformation,
+            "url": uploadResponse["pre"]
         }
     
     except Exception as e:

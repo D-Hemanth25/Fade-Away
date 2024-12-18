@@ -1,4 +1,12 @@
+import os
 import boto3
+from dotenv import load_dotenv
+
+load_dotenv()
+
+REGION = os.getenv('REGION')
+BUCKET_NAME = os.getenv("BUCKET_NAME")
+
 
 def getImageInfo(file):
     """
@@ -36,7 +44,7 @@ def detectNSFWContent(file):
         file.file.seek(0)
         image = file.file.read()
         
-        rekognitionClient = boto3.client('rekognition', region_name='ap-southeast-1')
+        rekognitionClient = boto3.client('rekognition', region_name=REGION)
 
         response = rekognitionClient.detect_moderation_labels(Image={'Bytes': image})
         labels = [
@@ -48,3 +56,33 @@ def detectNSFWContent(file):
     
     except Exception as e:
         return {"error": str(e)}, []
+
+
+def uploadToS3(file, expiration):
+    """
+    Uploads the given file to AWS S3 Bucket.
+    \n
+    Args:
+        * file: The uploaded image file (UploadFile).
+    \n
+    Returns:
+        * dict: Success or error message.
+    """
+    s3Client = boto3.client("s3")
+    bucketName = BUCKET_NAME
+
+    try:
+        file.file.seek(0)
+        
+        s3Client.upload_fileobj(file.file, bucketName, file.filename)
+        preSignedURL = s3Client.generate_presigned_url("get_object",
+                                                        Params={'Bucket': BUCKET_NAME,
+                                                                'Key': file.filename,
+                                                                'ResponseContentDisposition': 'inline'
+                                                                },
+                                                        ExpiresIn=expiration,
+                                                        )
+        return {"success": True, "pre": preSignedURL, "message": f"File '{file.filename}' uploaded successfully."}
+    
+    except Exception as e:
+        return {"error": str(e)}
