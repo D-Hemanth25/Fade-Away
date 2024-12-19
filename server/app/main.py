@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from app.validation.utils import getImageInfo, detectNSFWContent, uploadToS3
+from app.dynamoDB.utils import addImageToDB
 
 app = FastAPI()
 
@@ -39,10 +40,17 @@ async def uploadImage(file: UploadFile = File(...)):
             error_message = uploadResponse.get("error", "Unknown error")
             raise HTTPException(status_code=400, detail=f"Error in uploading file: {error_message}")
 
+        imageURL = uploadResponse["pre"]
+        updateDBResponse = addImageToDB("test-user-1", imageURL, 5)
+
+        if not updateDBResponse.get("success", False):
+            error_message = updateDBResponse.get("error", "unknown error")
+            raise HTTPException(status_code=400, detail=f"Error updating DB: {error_message}")
+
         return {
             "message": "Image uploaded successfully",
             "info": imageInformation,
-            "url": uploadResponse["pre"]
+            "url": imageURL
         }
     
     except Exception as e:
