@@ -17,7 +17,9 @@ By leveraging AWS services like S3 and DynamoDB, the service is both cost-effect
 
 ## Screenshots
 
+
 <img title="application screenshot" alt="landing page" src="./client/assets/Screenshot 2024-12-24 at 9.55.30 PM.png">
+
 <img title="application screenshot" alt="upload page" src="./client/assets/Screenshot 2024-12-24 at 9.55.18 PM.png">
 
 ## Quick Start
