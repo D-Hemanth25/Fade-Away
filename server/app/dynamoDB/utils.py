@@ -50,6 +50,3 @@ def findUserImages(username):
         return {"success": True, "images": item}
     except Exception as e:
          return {"error": str(e)}
-    
-
-print(findUserImages("test-user-1"))

@@ -1,17 +1,42 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, Form, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from app.validation.utils import getImageInfo, detectNSFWContent, uploadToS3
-from app.dynamoDB.utils import addImageToDB
+from app.dynamoDB.utils import addImageToDB, findUserImages
 
 app = FastAPI()
 
-@app.get("/")
-def index():
-    return {
-        "message": "Hello!"
-    }
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/images")
+def getUserImages(user):
+    """
+    Endpoint takes in userId and 
+    \n
+    Returns all the image url's that are active for user
+    """
+    response = findUserImages(user)
+
+    images = [img for img in response["images"]["images"]]
+    urls = [image["url"] for image in images]
+
+    return urls
 
 @app.post("/upload")
-async def uploadImage(file: UploadFile = File(...)):
+async def uploadImage(
+    userId: str = Form(...),
+    expiry: int = Form(...),
+    file: UploadFile = File(...)
+):
     """
     Endpoint takes in an image file and
     \n
@@ -35,13 +60,13 @@ async def uploadImage(file: UploadFile = File(...)):
         if isNSFW:
             raise HTTPException(status_code=400, detail=f"Uploaded file contains NSFW content: {nsfwLabels}")
 
-        uploadResponse = uploadToS3(file, 1 * 3600)
+        uploadResponse = uploadToS3(file, expiry * 3600)
         if not uploadResponse.get("success", False):
             error_message = uploadResponse.get("error", "Unknown error")
             raise HTTPException(status_code=400, detail=f"Error in uploading file: {error_message}")
 
         imageURL = uploadResponse["pre"]
-        updateDBResponse = addImageToDB("test-user-1", imageURL, 5)
+        updateDBResponse = addImageToDB(userId, imageURL, expiry=expiry)
 
         if not updateDBResponse.get("success", False):
             error_message = updateDBResponse.get("error", "unknown error")
