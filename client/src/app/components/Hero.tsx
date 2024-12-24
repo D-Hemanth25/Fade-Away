@@ -6,7 +6,6 @@ import Link from 'next/link';
 export function Hero() {
   return (
     <div className="relative overflow-hidden bg-black h-screen flex items-center">
-      {/* Decorative gradient circles */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
       
