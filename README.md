@@ -15,13 +15,6 @@ This project addresses common challenges in building secure and scalable image u
 
 By leveraging AWS services like S3 and DynamoDB, the service is both cost-effective and highly scalable.
 
-## Screenshots
-
-
-<img title="application screenshot" alt="landing page" src="./client/assets/Screenshot 2024-12-24 at 9.55.30 PM.png">
-
-<img title="application screenshot" alt="upload page" src="./client/assets/Screenshot 2024-12-24 at 9.55.18 PM.png">
-
 ## Quick Start
 ### Prerequisites
 1. Install Python 3.9 or higher.
@@ -84,6 +77,11 @@ curl -X POST "http://127.0.0.1:8000/upload" \
   "url": "https://your-bucket.s3.amazonaws.com/image.png?AWSAccessKeyId=..."
 }
 ```
+
+## Application Screenshots
+
+<img src="./client/assets/Screenshot 2024-12-24 at 9.55.30 PM.png">
+<img src="./client/assets/Screenshot 2024-12-24 at 9.55.18 PM.png">
 
 # Work In progress
 
